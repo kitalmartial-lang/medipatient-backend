@@ -27,7 +27,7 @@ spring:
   
   security:
     jwt:
-      secret: ${JWT_SECRET:mySecretKey}
+      secret: ${JWT_SECRET:myVeryLongSecretKeyForMediPatientApplicationThatIsAtLeast256BitsLong1234567890}
       expiration: 86400000 # 24 hours
   
   jackson:
@@ -37,8 +37,6 @@ spring:
 
 server:
   port: 7080
-  servlet:
-    context-path: /api
 
 management:
   endpoints:
@@ -54,6 +52,17 @@ logging:
     com.medipatient: DEBUG
     org.springframework.security: DEBUG
     org.hibernate.SQL: DEBUG
+
+# Configuration OpenAPI/Swagger
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+    disable-swagger-default-url: true
+  show-actuator: true
 
 ---
 spring:
