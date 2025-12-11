@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
-
+import com.medipatient.patient.model.Gender;
 @Data
 @Builder
 @NoArgsConstructor
@@ -20,7 +20,7 @@ public class PatientDto {
     private UUID id;
     private ProfileDto user;
     private LocalDate dateOfBirth;
-    private Patient.Gender gender;
+    private Gender gender;
     private String bloodType;
     private List<String> allergies;
     private List<String> chronicConditions;

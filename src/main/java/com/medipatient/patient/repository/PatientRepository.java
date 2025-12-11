@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import com.medipatient.patient.model.Gender;
 
 @Repository
 public interface PatientRepository extends JpaRepository<Patient, UUID> {
@@ -30,7 +31,7 @@ public interface PatientRepository extends JpaRepository<Patient, UUID> {
            "(:bloodType IS NULL OR p.bloodType = :bloodType) AND " +
            "(:minAge IS NULL OR :maxAge IS NULL OR " +
            "p.dateOfBirth BETWEEN :minBirthDate AND :maxBirthDate)")
-    Page<Patient> findWithFilters(@Param("gender") Patient.Gender gender,
+    Page<Patient> findWithFilters(@Param("gender") Gender gender,
                                   @Param("bloodType") String bloodType,
                                   @Param("minAge") Integer minAge,
                                   @Param("maxAge") Integer maxAge,
@@ -49,7 +50,7 @@ public interface PatientRepository extends JpaRepository<Patient, UUID> {
     List<Patient> findByAllergy(@Param("allergy") String allergy);
 
     @Query("SELECT COUNT(p) FROM Patient p WHERE p.gender = :gender")
-    long countByGender(@Param("gender") Patient.Gender gender);
+    long countByGender(@Param("gender") Gender gender);
 
     @Query("SELECT p.bloodType, COUNT(p) FROM Patient p WHERE p.bloodType IS NOT NULL GROUP BY p.bloodType")
     List<Object[]> countByBloodType();
