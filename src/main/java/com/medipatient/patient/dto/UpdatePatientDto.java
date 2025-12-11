@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.medipatient.patient.model.Gender;
+
 
 import java.time.LocalDate;
 import java.util.List;
@@ -19,7 +21,7 @@ public class UpdatePatientDto {
     @Past(message = "Date of birth must be in the past")
     private LocalDate dateOfBirth;
     
-    private Patient.Gender gender;
+    private Gender gender;
     private String bloodType;
     private List<String> allergies;
     private List<String> chronicConditions;
