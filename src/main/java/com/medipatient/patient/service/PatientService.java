@@ -95,6 +95,7 @@ public class PatientService {
         return patientMapper.toDto(savedPatient);
     }
 
+
     public PatientDto updatePatient(UUID id, UpdatePatientDto updatePatientDto) {
         Patient patient = patientRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Patient not found with id: " + id));

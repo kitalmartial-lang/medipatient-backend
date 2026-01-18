@@ -28,6 +28,7 @@ public class Patient {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private Profile user;
@@ -70,5 +71,6 @@ public class Patient {
     @Version
     @Builder.Default
     private Long version = 0L;
+
 
 }
