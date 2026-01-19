@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Tag(name = "Authentification", description = "Gestion de l'authentification et autorisation")
 public class AuthController {

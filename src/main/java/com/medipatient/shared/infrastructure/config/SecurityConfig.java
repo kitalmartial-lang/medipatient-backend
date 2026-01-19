@@ -1,5 +1,7 @@
 package com.medipatient.shared.infrastructure.config;
 
+import com.medipatient.auth.filter.JwtAuthenticationFilter;
+import com.medipatient.auth.service.UserDetailsServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -9,8 +11,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import com.medipatient.auth.service.UserDetailsServiceImpl;
-import com.medipatient.auth.filter.JwtAuthenticationFilter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -20,6 +20,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -47,26 +48,41 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthFilter) throws Exception {
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
-            // Configuration STATELESS pour JWT
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/doctor/**").hasAnyRole("ADMIN", "DOCTOR")
-                .requestMatchers("/api/patient/**").hasAnyRole("ADMIN", "DOCTOR", "PATIENT")
-                .requestMatchers("/api/agent/**").hasAnyRole("ADMIN", "AGENT")
-                .requestMatchers("/api/**").authenticated()
-                .anyRequest().permitAll()
-            )
-            // Pas de configuration form login pour JWT
-            .formLogin(form -> form.disable())
-            .logout(logout -> logout.disable())
-            // Ajouter le filtre JWT avant UsernamePasswordAuthenticationFilter
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                // 1. Désactiver CSRF (Obligatoire pour que le POST login fonctionne)
+                .csrf(csrf -> csrf.disable())
+
+                // 2. Activer CORS (Utilise la config définie plus bas)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                // 3. Mode Stateless (Pas de session serveur)
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+
+                // 4. Autorisations des URLs
+                .authorizeHttpRequests(authz -> authz
+                        // Endpoints publics
+                        .requestMatchers("/api/auth/**").permitAll()  // Login & Register
+                        .requestMatchers("/auth/**").permitAll()      // Compatibilité ancien chemin
+                        .requestMatchers("/error").permitAll()        // Pour voir les erreurs 500
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+
+                        // Endpoints protégés par rôles
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/doctor/**").hasAnyRole("ADMIN", "DOCTOR")
+                        .requestMatchers("/api/patient/**").hasAnyRole("ADMIN", "DOCTOR", "PATIENT")
+                        .requestMatchers("/api/agent/**").hasAnyRole("ADMIN", "AGENT")
+
+                        // Tout le reste nécessite un token valide
+                        .anyRequest().authenticated()
+                )
+
+                // 5. Désactiver le login par défaut
+                .formLogin(form -> form.disable())
+                .logout(logout -> logout.disable())
+
+                // 6. Ajouter le filtre JWT
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -74,11 +90,17 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:8080", // Votre port Frontend habituel
+                "http://localhost:8082", // Votre port Frontend alternatif
+                "http://localhost:5173"  // Port Vite standard (au cas où)
+        ));
+
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
         configuration.setAllowCredentials(true);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
