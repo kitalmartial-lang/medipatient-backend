@@ -28,6 +28,7 @@ public class Patient {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private Profile user;
@@ -35,7 +36,8 @@ public class Patient {
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = GenderConverter.class)
+    @Column(name="gender", nullable = false)
     private Gender gender;
 
     @Column(name = "blood_type")
@@ -70,7 +72,5 @@ public class Patient {
     @Builder.Default
     private Long version = 0L;
 
-    public enum Gender {
-        MALE, FEMALE, OTHER
-    }
+
 }

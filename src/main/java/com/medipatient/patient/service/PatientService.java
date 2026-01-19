@@ -19,6 +19,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import com.medipatient.patient.model.Gender;
+
 
 @Service
 @RequiredArgsConstructor
@@ -43,7 +45,7 @@ public class PatientService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PatientDto> findWithFilters(Patient.Gender gender, String bloodType, 
+    public Page<PatientDto> findWithFilters(Gender gender, String bloodType,
                                            Integer minAge, Integer maxAge, Pageable pageable) {
         LocalDate minBirthDate = null;
         LocalDate maxBirthDate = null;
@@ -93,6 +95,7 @@ public class PatientService {
         return patientMapper.toDto(savedPatient);
     }
 
+
     public PatientDto updatePatient(UUID id, UpdatePatientDto updatePatientDto) {
         Patient patient = patientRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Patient not found with id: " + id));
@@ -138,7 +141,7 @@ public class PatientService {
     }
 
     @Transactional(readOnly = true)
-    public long countByGender(Patient.Gender gender) {
+    public long countByGender(Gender gender) {
         return patientRepository.countByGender(gender);
     }
 

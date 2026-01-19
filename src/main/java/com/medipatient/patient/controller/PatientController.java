@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import com.medipatient.patient.model.Gender;
 
 @RestController
 @RequestMapping("/api/patients")
@@ -32,7 +33,7 @@ public class PatientController {
     public ResponseEntity<Page<PatientDto>> getAllPatients(
             @PageableDefault(size = 20, sort = "user.lastName") Pageable pageable,
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) Patient.Gender gender,
+            @RequestParam(required = false) Gender gender,
             @RequestParam(required = false) String bloodType,
             @RequestParam(required = false) Integer minAge,
             @RequestParam(required = false) Integer maxAge) {
@@ -117,7 +118,7 @@ public class PatientController {
     }
 
     @GetMapping("/stats/gender")
-    public ResponseEntity<Long> countByGender(@RequestParam Patient.Gender gender) {
+    public ResponseEntity<Long> countByGender(@RequestParam Gender gender) {
         long count = patientService.countByGender(gender);
         return ResponseEntity.ok(count);
     }
