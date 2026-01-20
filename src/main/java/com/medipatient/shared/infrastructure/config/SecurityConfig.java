@@ -4,6 +4,7 @@ import com.medipatient.auth.filter.JwtAuthenticationFilter;
 import com.medipatient.auth.service.UserDetailsServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod; // <--- IMPORT TRES IMPORTANT
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -48,10 +49,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthFilter) throws Exception {
         http
-                // 1. Désactiver CSRF (Obligatoire pour que le POST login fonctionne)
+                // 1. Désactiver CSRF (Indispensable pour API REST)
                 .csrf(csrf -> csrf.disable())
 
-                // 2. Activer CORS (Utilise la config définie plus bas)
+                // 2. Activer CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 // 3. Mode Stateless (Pas de session serveur)
@@ -59,29 +60,31 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // 4. Autorisations des URLs
+                // 4. Règles d'accès (C'est ici que ça se joue)
                 .authorizeHttpRequests(authz -> authz
-                        // Endpoints publics
-                        .requestMatchers("/api/auth/**").permitAll()  // Login & Register
-                        .requestMatchers("/auth/**").permitAll()      // Compatibilité ancien chemin
-                        .requestMatchers("/error").permitAll()        // Pour voir les erreurs 500
+                        // A. Routes Publiques (Login/Register)
+                        .requestMatchers("/api/auth/**").permitAll()
+
+                        // B. INSCRIPTION (Route spécifique qui posait problème)
+                        .requestMatchers(HttpMethod.POST, "/api/profiles").permitAll()
+
+                        // C. Documentation & Erreurs
+                        .requestMatchers("/error").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
-                        // Endpoints protégés par rôles
+                        // D. Routes Protégées par rôle
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/doctor/**").hasAnyRole("ADMIN", "DOCTOR")
                         .requestMatchers("/api/patient/**").hasAnyRole("ADMIN", "DOCTOR", "PATIENT")
                         .requestMatchers("/api/agent/**").hasAnyRole("ADMIN", "AGENT")
 
-                        // Tout le reste nécessite un token valide
+                        // E. Tout le reste nécessite d'être connecté
                         .anyRequest().authenticated()
                 )
 
-                // 5. Désactiver le login par défaut
                 .formLogin(form -> form.disable())
                 .logout(logout -> logout.disable())
 
-                // 6. Ajouter le filtre JWT
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -91,10 +94,11 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
+        // Autoriser vos URLs Frontend
         configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:8080", // Votre port Frontend habituel
-                "http://localhost:8082", // Votre port Frontend alternatif
-                "http://localhost:5173"  // Port Vite standard (au cas où)
+                "http://localhost:8080",
+                "http://localhost:8082",
+                "http://localhost:5173"
         ));
 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
