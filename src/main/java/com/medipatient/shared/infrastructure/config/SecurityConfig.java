@@ -60,12 +60,12 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // 4. Règles d'accès (C'est ici que ça se joue)
+                // 4. Règles d'accès
                 .authorizeHttpRequests(authz -> authz
                         // A. Routes Publiques (Login/Register)
                         .requestMatchers("/api/auth/**").permitAll()
 
-                        // B. INSCRIPTION (Route spécifique qui posait problème)
+                        // B. INSCRIPTION
                         .requestMatchers(HttpMethod.POST, "/api/profiles").permitAll()
 
                         // C. Documentation & Erreurs
