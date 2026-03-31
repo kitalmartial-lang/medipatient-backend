@@ -1,5 +1,6 @@
 package com.medipatient.doctor.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.medipatient.profile.model.Profile;
 import com.medipatient.specialty.model.Specialty;
 import jakarta.persistence.*;
@@ -40,9 +41,11 @@ public class Doctor {
     @Builder.Default
     private Integer consultationFee = 0;
 
-    @Enumerated(EnumType.STRING)
+    //@Enumerated(EnumType.STRING)
     @Column(name = "availability_status")
     @Builder.Default
+    @Convert(converter = AvailabilityStatusConverter.class)
+    //@Column(name = "availability_status")
     private AvailabilityStatus availabilityStatus = AvailabilityStatus.AVAILABLE;
 
     @CreationTimestamp
@@ -57,7 +60,9 @@ public class Doctor {
     @Builder.Default
     private Long version = 0L;
 
-    public enum AvailabilityStatus {
-        AVAILABLE, BUSY, OFFLINE
-    }
+//    public enum AvailabilityStatus {
+//        AVAILABLE, BUSY, OFFLINE
+//
+//    }
+
 }

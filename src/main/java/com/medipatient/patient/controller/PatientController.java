@@ -128,4 +128,10 @@ public class PatientController {
         List<Object[]> stats = patientService.getBloodTypeStatistics();
         return ResponseEntity.ok(stats);
     }
+
+    @PostMapping("/sync/{profileId}")
+    public ResponseEntity<PatientDto> syncPatientProfile(@PathVariable UUID profileId) {
+        PatientDto initializedPatient = patientService.createInitialPatientForProfile(profileId);
+        return ResponseEntity.ok(initializedPatient);
+    }
 }

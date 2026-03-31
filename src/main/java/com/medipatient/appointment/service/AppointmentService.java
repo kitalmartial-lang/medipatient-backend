@@ -7,6 +7,7 @@ import com.medipatient.appointment.dto.UpdateAppointmentDto;
 import com.medipatient.appointment.mapper.AppointmentMapper;
 import com.medipatient.appointment.model.Appointment;
 import com.medipatient.appointment.repository.AppointmentRepository;
+import com.medipatient.doctor.model.AvailabilityStatus;
 import com.medipatient.doctor.model.Doctor;
 import com.medipatient.doctor.repository.DoctorRepository;
 import com.medipatient.patient.model.Patient;
@@ -104,7 +105,7 @@ public class AppointmentService {
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new IllegalArgumentException("Doctor not found with id: " + doctorId));
 
-        if (!doctor.getAvailabilityStatus().equals(Doctor.AvailabilityStatus.AVAILABLE)) {
+        if (!doctor.getAvailabilityStatus().equals(AvailabilityStatus.AVAILABLE)) {
             return new ArrayList<>();
         }
 

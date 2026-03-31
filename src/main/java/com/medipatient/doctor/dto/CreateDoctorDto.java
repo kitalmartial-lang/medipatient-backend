@@ -1,5 +1,6 @@
 package com.medipatient.doctor.dto;
 
+import com.medipatient.doctor.model.AvailabilityStatus;
 import com.medipatient.doctor.model.Doctor;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -26,5 +27,5 @@ public class CreateDoctorDto {
     @PositiveOrZero(message = "Consultation fee must be positive or zero")
     private Integer consultationFee;
     
-    private Doctor.AvailabilityStatus availabilityStatus;
+    private AvailabilityStatus availabilityStatus;
 }

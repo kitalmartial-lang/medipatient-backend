@@ -95,6 +95,31 @@ public class PatientService {
         return patientMapper.toDto(savedPatient);
     }
 
+    @Transactional
+    public PatientDto createInitialPatientForProfile(UUID profileId) {
+        // 1. On vérifie que le profil existe
+        Profile user = profileRepository.findById(profileId)
+                .orElseThrow(() -> new IllegalArgumentException("Profile not found with id: " + profileId));
+
+        // 2. On vérifie s'il n'a pas DÉJÀ un dossier patient (pour éviter les doublons)
+        Optional<Patient> existingPatient = patientRepository.findByUserId(profileId);
+        if (existingPatient.isPresent()) {
+            log.info("Le patient existe déjà pour ce profil.");
+            return patientMapper.toDto(existingPatient.get());
+        }
+
+        // 3. On crée un dossier patient "vide" juste pour faire le lien
+        Patient newPatient = new Patient();
+        newPatient.setUser(user);
+        // Tu peux mettre des valeurs par défaut si ta base de données l'exige
+        // newPatient.setGender(Gender.UNKNOWN);
+
+        Patient savedPatient = patientRepository.save(newPatient);
+        log.info("Dossier patient initialisé automatiquement pour le profil: {}", profileId);
+
+        return patientMapper.toDto(savedPatient);
+    }
+
 
     public PatientDto updatePatient(UUID id, UpdatePatientDto updatePatientDto) {
         Patient patient = patientRepository.findById(id)

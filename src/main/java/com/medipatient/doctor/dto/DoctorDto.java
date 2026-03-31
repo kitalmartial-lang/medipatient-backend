@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
+import com.medipatient.doctor.model.AvailabilityStatus;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -21,7 +21,7 @@ public class DoctorDto {
     private SpecialtyDto specialty;
     private String licenseNumber;
     private Integer consultationFee;
-    private Doctor.AvailabilityStatus availabilityStatus;
+    private AvailabilityStatus availabilityStatus;
     private ZonedDateTime createdAt;
     private ZonedDateTime updatedAt;
 }

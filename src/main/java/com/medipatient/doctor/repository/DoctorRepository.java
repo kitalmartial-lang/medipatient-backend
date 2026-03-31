@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import com.medipatient.doctor.model.AvailabilityStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,10 +27,10 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
     Page<Doctor> findBySpecialtyId(UUID specialtyId, Pageable pageable);
 
     @Query("SELECT d FROM Doctor d WHERE d.availabilityStatus = :status")
-    List<Doctor> findByAvailabilityStatus(@Param("status") Doctor.AvailabilityStatus status);
+    List<Doctor> findByAvailabilityStatus(@Param("status") AvailabilityStatus status);
 
     @Query("SELECT d FROM Doctor d WHERE d.availabilityStatus = :status")
-    Page<Doctor> findByAvailabilityStatus(@Param("status") Doctor.AvailabilityStatus status, Pageable pageable);
+    Page<Doctor> findByAvailabilityStatus(@Param("status") AvailabilityStatus status, Pageable pageable);
 
     @Query("SELECT d FROM Doctor d JOIN d.user u WHERE " +
            "(:search IS NULL OR " +
@@ -40,7 +41,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
            "(:availabilityStatus IS NULL OR d.availabilityStatus = :availabilityStatus)")
     Page<Doctor> searchDoctors(@Param("search") String search,
                                @Param("specialtyId") UUID specialtyId,
-                               @Param("availabilityStatus") Doctor.AvailabilityStatus availabilityStatus,
+                               @Param("availabilityStatus") AvailabilityStatus availabilityStatus,
                                Pageable pageable);
 
     @Query("SELECT d FROM Doctor d WHERE " +
@@ -52,7 +53,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
     List<Doctor> findAvailableDoctorsForDate(@Param("date") java.time.LocalDate date);
 
     @Query("SELECT COUNT(d) FROM Doctor d WHERE d.availabilityStatus = :status")
-    long countByAvailabilityStatus(@Param("status") Doctor.AvailabilityStatus status);
+    long countByAvailabilityStatus(@Param("status") AvailabilityStatus status);
 
     @Query("SELECT s.name, COUNT(d) FROM Doctor d JOIN d.specialty s GROUP BY s.name")
     List<Object[]> countBySpecialty();

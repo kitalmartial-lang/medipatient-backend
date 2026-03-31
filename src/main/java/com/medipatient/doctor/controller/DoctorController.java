@@ -3,7 +3,7 @@ package com.medipatient.doctor.controller;
 import com.medipatient.doctor.dto.CreateDoctorDto;
 import com.medipatient.doctor.dto.DoctorDto;
 import com.medipatient.doctor.dto.UpdateDoctorDto;
-import com.medipatient.doctor.model.Doctor;
+import com.medipatient.doctor.model.AvailabilityStatus;
 import com.medipatient.doctor.service.DoctorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public class DoctorController {
             @PageableDefault(size = 20, sort = "user.lastName") Pageable pageable,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) UUID specialtyId,
-            @RequestParam(required = false) Doctor.AvailabilityStatus availabilityStatus,
+            @RequestParam(required = false) AvailabilityStatus availabilityStatus,
             @RequestParam(required = false) Integer minFee,
             @RequestParam(required = false) Integer maxFee) {
         
@@ -97,7 +97,7 @@ public class DoctorController {
 
     @PatchMapping("/{id}/availability")
     public ResponseEntity<DoctorDto> updateAvailabilityStatus(@PathVariable UUID id, 
-                                                             @RequestParam Doctor.AvailabilityStatus status) {
+                                                             @RequestParam AvailabilityStatus status) {
         try {
             DoctorDto updatedDoctor = doctorService.updateAvailabilityStatus(id, status);
             return ResponseEntity.ok(updatedDoctor);
@@ -135,7 +135,7 @@ public class DoctorController {
 
     @GetMapping("/availability/{status}")
     public ResponseEntity<Page<DoctorDto>> getDoctorsByAvailabilityStatus(
-            @PathVariable Doctor.AvailabilityStatus status,
+            @PathVariable AvailabilityStatus status,
             @PageableDefault(size = 20, sort = "user.lastName") Pageable pageable) {
         
         Page<DoctorDto> doctors = doctorService.getDoctorsByAvailabilityStatus(status, pageable);
@@ -143,7 +143,7 @@ public class DoctorController {
     }
 
     @GetMapping("/stats/availability")
-    public ResponseEntity<Long> countByAvailabilityStatus(@RequestParam Doctor.AvailabilityStatus status) {
+    public ResponseEntity<Long> countByAvailabilityStatus(@RequestParam AvailabilityStatus status) {
         long count = doctorService.countByAvailabilityStatus(status);
         return ResponseEntity.ok(count);
     }

@@ -10,6 +10,7 @@ import com.medipatient.profile.model.Profile;
 import com.medipatient.profile.repository.ProfileRepository;
 import com.medipatient.specialty.model.Specialty;
 import com.medipatient.specialty.repository.SpecialtyRepository;
+import com.medipatient.doctor.model.AvailabilityStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,7 +43,7 @@ public class DoctorService {
 
     @Transactional(readOnly = true)
     public Page<DoctorDto> searchDoctors(String search, UUID specialtyId, 
-                                        Doctor.AvailabilityStatus availabilityStatus, 
+                                        AvailabilityStatus availabilityStatus,
                                         Pageable pageable) {
         return doctorRepository.searchDoctors(search, specialtyId, availabilityStatus, pageable)
                 .map(doctorMapper::toDto);
@@ -54,7 +56,7 @@ public class DoctorService {
     }
 
     @Transactional(readOnly = true)
-    public Page<DoctorDto> getDoctorsByAvailabilityStatus(Doctor.AvailabilityStatus status, Pageable pageable) {
+    public Page<DoctorDto> getDoctorsByAvailabilityStatus(AvailabilityStatus status, Pageable pageable) {
         return doctorRepository.findByAvailabilityStatus(status, pageable)
                 .map(doctorMapper::toDto);
     }
@@ -92,42 +94,48 @@ public class DoctorService {
     }
 
     public DoctorDto createDoctor(CreateDoctorDto createDoctorDto) {
+        // 1. Récupération du profil
         Profile user = profileRepository.findById(createDoctorDto.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("Profile not found with id: " + createDoctorDto.getUserId()));
 
+        // 2. Vérifications de sécurité
         if (!user.getRole().equals(Profile.Role.DOCTOR)) {
             throw new IllegalArgumentException("Profile must have DOCTOR role to create doctor record");
         }
-
         if (doctorRepository.findByUserId(createDoctorDto.getUserId()).isPresent()) {
             throw new IllegalArgumentException("Doctor record already exists for this user");
         }
 
-        if (createDoctorDto.getLicenseNumber() != null && 
-            doctorRepository.existsByLicenseNumber(createDoctorDto.getLicenseNumber())) {
-            throw new IllegalArgumentException("License number already exists: " + createDoctorDto.getLicenseNumber());
-        }
-
-        Doctor doctor = doctorMapper.toEntity(createDoctorDto);
+        // 3. CONSTRUCTION MANUELLE (On n'utilise plus doctorMapper.toEntity ici)
+        Doctor doctor = new Doctor();
         doctor.setUser(user);
+        doctor.setLicenseNumber(createDoctorDto.getLicenseNumber());
+        doctor.setConsultationFee(createDoctorDto.getConsultationFee());
+        doctor.setAvailabilityStatus(createDoctorDto.getAvailabilityStatus()); // Utilise le bon Enum
 
+        // On initialise les dates pour éviter les NullPointer
+        doctor.setCreatedAt(java.time.ZonedDateTime.now());
+        doctor.setUpdatedAt(java.time.ZonedDateTime.now());
+
+        // 4. Gestion de la spécialité
         if (createDoctorDto.getSpecialtyId() != null) {
             Specialty specialty = specialtyRepository.findById(createDoctorDto.getSpecialtyId())
                     .orElseThrow(() -> new IllegalArgumentException("Specialty not found with id: " + createDoctorDto.getSpecialtyId()));
             doctor.setSpecialty(specialty);
         }
 
+        // 5. Sauvegarde
         Doctor savedDoctor = doctorRepository.save(doctor);
         log.info("Created new doctor with id: {}", savedDoctor.getId());
-        
+
+        // On utilise le mapper uniquement pour le retour (vers DTO), ce qui pose moins de soucis
         return doctorMapper.toDto(savedDoctor);
     }
-
     public DoctorDto updateDoctor(UUID id, UpdateDoctorDto updateDoctorDto) {
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Doctor not found with id: " + id));
 
-        if (updateDoctorDto.getLicenseNumber() != null && 
+        if (updateDoctorDto.getLicenseNumber() != null &&
             !updateDoctorDto.getLicenseNumber().equals(doctor.getLicenseNumber()) &&
             doctorRepository.existsByLicenseNumber(updateDoctorDto.getLicenseNumber())) {
             throw new IllegalArgumentException("License number already exists: " + updateDoctorDto.getLicenseNumber());
@@ -143,7 +151,7 @@ public class DoctorService {
 
         Doctor savedDoctor = doctorRepository.save(doctor);
         log.info("Updated doctor with id: {}", savedDoctor.getId());
-        
+
         return doctorMapper.toDto(savedDoctor);
     }
 
@@ -155,7 +163,7 @@ public class DoctorService {
         log.info("Deleted doctor with id: {}", id);
     }
 
-    public DoctorDto updateAvailabilityStatus(UUID id, Doctor.AvailabilityStatus status) {
+    public DoctorDto updateAvailabilityStatus(UUID id, AvailabilityStatus status) {
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Doctor not found with id: " + id));
 
@@ -173,7 +181,7 @@ public class DoctorService {
     }
 
     @Transactional(readOnly = true)
-    public long countByAvailabilityStatus(Doctor.AvailabilityStatus status) {
+    public long countByAvailabilityStatus(AvailabilityStatus status) {
         return doctorRepository.countByAvailabilityStatus(status);
     }
 
