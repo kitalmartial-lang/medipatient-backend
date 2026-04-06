@@ -4,7 +4,7 @@ import com.medipatient.auth.filter.JwtAuthenticationFilter;
 import com.medipatient.auth.service.UserDetailsServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod; // <--- IMPORT TRES IMPORTANT
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -78,6 +78,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/patient/**").hasAnyRole("ADMIN", "DOCTOR", "PATIENT")
                         .requestMatchers("/api/agent/**").hasAnyRole("ADMIN", "AGENT")
 
+                        .requestMatchers("/api/auth/**", "/api/voice/**").permitAll()
+
                         .requestMatchers("/api/notifications/**").authenticated() // Nécessite un Token
 
                         // E. Tout le reste nécessite d'être connecté
@@ -88,6 +90,7 @@ public class SecurityConfig {
                 .logout(logout -> logout.disable())
 
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
 
         return http.build();
     }
